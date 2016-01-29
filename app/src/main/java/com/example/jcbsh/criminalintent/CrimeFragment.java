@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.database.Cursor;
 import android.graphics.drawable.BitmapDrawable;
 import android.hardware.Camera;
@@ -36,6 +37,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 
@@ -286,7 +288,16 @@ public class CrimeFragment extends Fragment {
                 i.putExtra(Intent.EXTRA_SUBJECT,
                         getString(R.string.crime_report_subject));
                 i = Intent.createChooser(i, getString(R.string.send_report));
-                startActivity(i);
+
+                //check is there is app that will response to the implicit intent
+                //before starting it
+                PackageManager pm = getActivity().getPackageManager();
+                List<ResolveInfo> activities = pm.queryIntentActivities(i, 0);
+                boolean isIntentSafe = activities.size() > 0;
+                if (isIntentSafe) {
+                    startActivity(i);
+                }
+
             }
         });
 
@@ -296,7 +307,16 @@ public class CrimeFragment extends Fragment {
             public void onClick(View v) {
                 Intent i = new Intent(Intent.ACTION_PICK);
                 i.setData(ContactsContract.Contacts.CONTENT_URI);
-                startActivityForResult(i, REQUEST_SUSPECT);
+
+                //check is there is app that will response to the implicit intent
+                //before starting it
+                PackageManager pm = getActivity().getPackageManager();
+                List<ResolveInfo> activities = pm.queryIntentActivities(i, 0);
+                boolean isIntentSafe = activities.size() > 0;
+                if (isIntentSafe) {
+                    startActivityForResult(i, REQUEST_SUSPECT);
+                }
+
             }
         });
 
