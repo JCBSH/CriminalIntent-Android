@@ -12,7 +12,7 @@ import android.util.Log;
 public abstract class SingleFragmentActivity extends ActionBarActivity {
 
 
-    public static final String LIFE_TAG = "life_activity";
+    public static final String LIFE_TAG = "life_ListActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

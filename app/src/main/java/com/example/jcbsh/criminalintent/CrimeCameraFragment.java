@@ -1,30 +1,88 @@
 package com.example.jcbsh.criminalintent;
 
 import android.annotation.TargetApi;
+import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
 import android.hardware.Camera;
+import android.hardware.SensorManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.OrientationEventListener;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Created by JCBSH on 22/01/2016.
  */
 public class CrimeCameraFragment extends Fragment {
+    public static final String EXTRA_PHOTO_FILENAME = "com.example.jcbsh.criminalintent.photo_filename";
+    public static final String EXTRA_PHOTO_ORIENTATION = "com.example.jcbsh.criminalintent.photo_orientation";
+
     private static final String TAG = "CrimeCameraFragment";
     private Camera mCamera;
     private SurfaceView mSurfaceView;
     private Button mTakePictureButton;
+    private View mProgressContainer;
+    private OrientationEventListener mOrientationEventListener;
+    private int mOrientation =  0;
+
+    private Camera.ShutterCallback mShutterCallback = new Camera.ShutterCallback() {
+        public void onShutter() {
+            // Display the progress indicator
+            mProgressContainer.setVisibility(View.VISIBLE);
+        }
+    };
+
+    private Camera.PictureCallback mJpegCallback = new Camera.PictureCallback() {
+        public void onPictureTaken(byte[] data, Camera camera) {
+            // Create a filename
+            String filename = UUID.randomUUID().toString() + ".jpg";
+            // Save the jpeg data to disk
+            FileOutputStream os = null;
+            boolean success = true;
+            try {
+                os = getActivity().openFileOutput(filename, Context.MODE_PRIVATE);
+                os.write(data);
+            } catch (Exception e) {
+                Log.e(TAG, "Error writing to file " + filename, e);
+                success = false;
+            } finally {
+                try {
+                    if (os != null)
+                        os.close();
+                } catch (Exception e) {
+                    Log.e(TAG, "Error closing file " + filename, e);
+                    success = false;
+                }
+            }
+            if (success) {
+                //Log.i(TAG, "JPEG saved at " + filename);
+                Intent intent = new Intent();
+                intent.putExtra(EXTRA_PHOTO_FILENAME, filename);
+                //Log.d(TAG,  String.valueOf(mOrientation));
+                intent.putExtra(EXTRA_PHOTO_ORIENTATION, mOrientation);
+                getActivity().setResult(Activity.RESULT_OK, intent);
+            } else {
+                getActivity().setResult(Activity.RESULT_CANCELED);
+            }
+
+
+            getActivity().finish();
+        }
+    };
 
     @Nullable
     @Override
@@ -36,7 +94,10 @@ public class CrimeCameraFragment extends Fragment {
         mTakePictureButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                getActivity().finish();
+                if (mCamera != null) {
+                    Log.d(TAG, "taking photo button pressed");
+                    mCamera.takePicture(mShutterCallback, null, mJpegCallback);
+                }
             }
         });
 
@@ -65,7 +126,12 @@ public class CrimeCameraFragment extends Fragment {
                 Camera.Parameters parameters = mCamera.getParameters();
                 Camera.Size s = getBestSupportedSize(parameters.getSupportedPreviewSizes(), width, height);
 
+                //Log.d("AAAAAA", String.valueOf(s.width) + " " + String.valueOf(s.height));
                 parameters.setPreviewSize(s.width, s.height);
+
+                s = getBestSupportedSize(parameters.getSupportedPictureSizes(), width, height);
+                //Log.d("AAAAAA", String.valueOf(s.width) + " " + String.valueOf(s.height));
+                parameters.setPictureSize(s.width, s.height);
                 mCamera.setParameters(parameters);
                 try {
                     mCamera.startPreview();
@@ -84,6 +150,9 @@ public class CrimeCameraFragment extends Fragment {
                 }
             }
         });
+
+        mProgressContainer = v.findViewById(R.id.crime_camera_progressContainer);
+        mProgressContainer.setVisibility(View.INVISIBLE);
         return v;
     }
 
@@ -115,6 +184,18 @@ public class CrimeCameraFragment extends Fragment {
             mCamera =  Camera.open();
         }
 
+        if (mOrientationEventListener == null) {
+            mOrientationEventListener = new OrientationEventListener(getActivity(), SensorManager.SENSOR_DELAY_NORMAL) {
+
+                @Override
+                public void onOrientationChanged(int orientation) {
+                    mOrientation = orientation;
+                }
+            };
+        }
+        if (mOrientationEventListener.canDetectOrientation()) {
+            mOrientationEventListener.enable();
+        }
     }
 
     @Override
@@ -124,5 +205,8 @@ public class CrimeCameraFragment extends Fragment {
             mCamera.release();
             mCamera = null;
         }
+
+        mOrientationEventListener.disable();
     }
+
 }

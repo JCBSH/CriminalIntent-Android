@@ -37,7 +37,7 @@ public class CrimeListFragment extends ListFragment {
     private static final int REQUEST_CRIME = 0;
     private ArrayList<Crime> mCrimes;
     private static final String TAG = "CrimeListFragment";
-    public static final String LIFE_TAG = "life_fragment";
+    public static final String LIFE_TAG = "life_ListFragment";
 
     private boolean mSubtitleVisible;
 

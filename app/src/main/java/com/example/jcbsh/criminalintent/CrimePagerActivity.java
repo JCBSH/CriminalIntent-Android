@@ -8,17 +8,20 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 
 import java.util.ArrayList;
 
 
 public class CrimePagerActivity extends ActionBarActivity implements CrimeFragment.OnFragmentInteractionListener{
+    public static final String LIFE_TAG = "life_CrimeActivity";
 
     private ViewPager mViewPager;
     private PagerAdapter mPagerAdapter;
     private ArrayList<Crime> mCrimes;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.d(LIFE_TAG, "onCreate ");
         super.onCreate(savedInstanceState);
         mViewPager = new ViewPager(this);
         mViewPager.setId(R.id.viewPager);
@@ -55,6 +58,37 @@ public class CrimePagerActivity extends ActionBarActivity implements CrimeFragme
         });
 
     }
+
+    @Override
+    protected void onStart() {
+        Log.d(LIFE_TAG, "onStart() ");
+        super.onStart();
+    }
+
+    @Override
+    protected void onResume() {
+        Log.d(LIFE_TAG, "onResume() ");
+        super.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        Log.d(LIFE_TAG, "onPause() ");
+        super.onPause();
+    }
+
+    @Override
+    protected void onStop() {
+        Log.d(LIFE_TAG, "onStop() ");
+        super.onStop();
+    }
+
+    @Override
+    protected void onDestroy() {
+        Log.d(LIFE_TAG, "onDestroy() ");
+        super.onDestroy();
+    }
+
 
     @Override
     public void onFragmentInteraction(Uri uri) {
