@@ -1,8 +1,10 @@
 package com.example.jcbsh.criminalintent;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.UUID;
 
@@ -16,6 +18,7 @@ public class Crime {
     private boolean mSolved;
     private Photo mPhoto = null;
     private String mSuspect;
+    private ArrayList<String> mPhoneNumbers;
 
     private static final String JSON_ID = "id";
     private static final String JSON_TITLE = "title";
@@ -23,14 +26,18 @@ public class Crime {
     private static final String JSON_DATE = "date";
     private static final String JSON_PHOTO = "photo";
     private static final String JSON_SUSPECT = "suspect";
+    private static final String JSON_PHONE_NUMBER = "number";
+    private static final String JSON_PHONE_NUMBERS = "numbers";
 
     public Crime() {
         mId = UUID.randomUUID();
         mDate = new Date();
+        mPhoneNumbers = new ArrayList<String>();
     }
 
     public Crime(JSONObject json) throws JSONException {
         mId = UUID.fromString(json.getString(JSON_ID));
+        mPhoneNumbers = new ArrayList<String>();
         if (json.has(JSON_TITLE)) {
             mTitle = json.getString(JSON_TITLE);
         }
@@ -40,6 +47,12 @@ public class Crime {
         }
         if (json.has(JSON_PHOTO)) {
             mPhoto = new Photo (json.getJSONObject(JSON_PHOTO));
+        }
+        if (json.has(JSON_PHONE_NUMBERS)) {
+            JSONArray array = json.getJSONArray(JSON_PHONE_NUMBERS);
+            for (int i = 0; i < array.length(); i++) {
+                mPhoneNumbers.add(array.getJSONObject(i).getString(JSON_PHONE_NUMBER));
+            }
         }
         mDate = new Date();
         mDate.setTime(json.getLong(JSON_DATE));
@@ -93,6 +106,14 @@ public class Crime {
         mSuspect = suspect;
     }
 
+    public ArrayList<String> getPhoneNumbers() {
+        return mPhoneNumbers;
+    }
+
+    public void setPhoneNumbers(ArrayList<String> phoneNumbers) {
+        mPhoneNumbers = phoneNumbers;
+    }
+
     @Override
     public String toString() {
         return mTitle;
@@ -105,6 +126,15 @@ public class Crime {
         object.put(JSON_SUSPECT, mSuspect);
         object.put(JSON_SOLVED, mSolved);
         object.put(JSON_DATE, mDate.getTime());
+        if (mPhoneNumbers.size() > 0) {
+            JSONArray array = new JSONArray();
+            for (String number : mPhoneNumbers) {
+                JSONObject numberObject = new JSONObject();
+                numberObject.put(JSON_PHONE_NUMBER, number);
+                array.put(numberObject);
+            }
+            object.put(JSON_PHONE_NUMBERS, array);
+        }
         if (mPhoto != null) {
             object.put(JSON_PHOTO, mPhoto.toJSON());
         }

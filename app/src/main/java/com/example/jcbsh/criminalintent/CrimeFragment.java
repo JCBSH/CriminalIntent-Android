@@ -36,6 +36,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -67,6 +68,7 @@ public class CrimeFragment extends Fragment {
     private android.view.ActionMode mActionMode;
     private Button mReportButton;
     private Button mSuspectButton;
+    private Button mCallSuspectButton;
 
 
     public CrimeFragment() {
@@ -305,8 +307,7 @@ public class CrimeFragment extends Fragment {
         mSuspectButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent i = new Intent(Intent.ACTION_PICK);
-                i.setData(ContactsContract.Contacts.CONTENT_URI);
+                Intent i = new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
 
                 //check is there is app that will response to the implicit intent
                 //before starting it
@@ -323,6 +324,24 @@ public class CrimeFragment extends Fragment {
         if (mCrime.getSuspect() != null) {
             mSuspectButton.setText(mCrime.getSuspect());
         }
+
+        mCallSuspectButton = (Button)view.findViewById(R.id.crime_callSuspectButton);
+        if (mCrime.getPhoneNumbers().size() > 0) {
+            mCallSuspectButton.setVisibility(View.VISIBLE);
+        } else {
+            mCallSuspectButton.setVisibility(View.INVISIBLE);
+        }
+        mCallSuspectButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mCrime.getPhoneNumbers().size() > 0) {
+                    Intent i = new Intent(Intent.ACTION_DIAL);
+                    i.setData(Uri.parse("tel:" + mCrime.getPhoneNumbers().get(0)));
+                    startActivity(i);
+                }
+
+            }
+        });
 
         return view;
     }
@@ -362,29 +381,54 @@ public class CrimeFragment extends Fragment {
                 mCrime.setPhoto(new Photo(filename, orientation));
                 showPhoto();
                 //Log.i(TAG, "Crime: " + mCrime.getTitle() + " has a photo");
+                break;
             case REQUEST_SUSPECT:
                 Uri contactUri = data.getData();
-                // Specify which fields you want your query to return
-                // values for.
-                String[] queryFields = new String[] {
-                        ContactsContract.Contacts.DISPLAY_NAME
-                };
-                // Perform your query - the contactUri is like a "where"
-                // clause here
-                Cursor c = getActivity().getContentResolver()
-                        .query(contactUri, queryFields, null, null, null);
-                // Double-check that you actually got results
-                if (c.getCount() == 0) {
-                    c.close();
+
+                String[] projection = new String[]{ContactsContract.Contacts.DISPLAY_NAME, ContactsContract.Contacts._ID};
+                Cursor cursor = getActivity().getContentResolver().query(contactUri, projection, null, null, null);
+
+                if(cursor.getCount() == 0){
+                    cursor.close();
                     return;
                 }
-                // Pull out the first column of the first row of data -
-                // that is your suspect's name.
-                c.moveToFirst();
-                String suspect = c.getString(0);
-                mCrime.setSuspect(suspect);
-                mSuspectButton.setText(suspect);
-                c.close();
+
+                cursor.moveToFirst();
+                int idIndex = cursor.getColumnIndex(ContactsContract.Contacts._ID);
+                int nameIndex = cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME);
+                String contractId = cursor.getString(idIndex);
+                String name = cursor.getString(nameIndex);
+                mCrime.setSuspect(name);
+
+                Cursor phones = getActivity().getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,null, ContactsContract.CommonDataKinds.Phone.CONTACT_ID + "=" + contractId,null,null);
+
+                ArrayList<String> numbers = new ArrayList<String>();
+                while(phones.moveToNext()){
+                    String number = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+                    numbers.add(number);
+
+//                    int type = phones.getInt(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.TYPE));
+//                    switch (type){
+//                        case ContactsContract.CommonDataKinds.Phone.TYPE_HOME:
+//                            break;
+//                        case ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE:
+//                            break;
+//                        case ContactsContract.CommonDataKinds.Phone.TYPE_WORK:
+//                            break;
+//                    }
+                }
+                mCrime.setPhoneNumbers(numbers);
+
+                phones.close();
+                cursor.close();
+
+                mSuspectButton.setText(mCrime.getSuspect());
+                if(mCrime.getPhoneNumbers().size() > 0){
+                    mCallSuspectButton.setVisibility(View.VISIBLE);
+                } else {
+                    mCallSuspectButton.setVisibility(View.INVISIBLE);
+                }
+                break;
         }
 
     }
