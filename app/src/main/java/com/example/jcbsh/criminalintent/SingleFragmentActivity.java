@@ -18,7 +18,7 @@ public abstract class SingleFragmentActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(LIFE_TAG, "onCreate() ");
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_fragment);
+        setContentView(getLayoutResId());
         FragmentManager fm = getSupportFragmentManager();
         Fragment fragment = fm.findFragmentById(R.id.fragmentContainer);
 
@@ -30,6 +30,10 @@ public abstract class SingleFragmentActivity extends ActionBarActivity {
             //Log.d(LIFE_TAG, "after transaction ");
         }
 
+    }
+
+    protected int getLayoutResId() {
+        return R.layout.activity_fragment;
     }
 
     @Override

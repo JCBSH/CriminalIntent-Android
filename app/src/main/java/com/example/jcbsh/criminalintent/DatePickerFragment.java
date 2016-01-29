@@ -1,5 +1,6 @@
 package com.example.jcbsh.criminalintent;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
@@ -19,6 +20,7 @@ import java.util.GregorianCalendar;
  */
 public class DatePickerFragment extends DialogFragment {
     public static final String EXTRA_DATE = "com.bignerdranch.android.criminalintent.date";
+    private static final String TAG = "DatePickerFragment";
 
     private DatePicker mDatePicker;
     private Date mDate;
@@ -46,7 +48,7 @@ public class DatePickerFragment extends DialogFragment {
             public void onDateChanged(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
 
                 mDate = new GregorianCalendar(year, monthOfYear, dayOfMonth).getTime();
-
+                //Log.d(TAG, String.valueOf(year));
                 // Update argument to preserve selected value on rotation
                 getArguments().putSerializable(EXTRA_DATE, mDate);
             }
@@ -58,7 +60,7 @@ public class DatePickerFragment extends DialogFragment {
                 .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        //sendResult(Activity.RESULT_OK);
+                        sendResult(Activity.RESULT_OK);
                     }
                 })
                 .create();

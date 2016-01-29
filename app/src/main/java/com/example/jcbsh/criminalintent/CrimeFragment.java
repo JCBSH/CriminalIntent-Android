@@ -160,6 +160,7 @@ public class CrimeFragment extends Fragment {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 mCrime.setTitle(s.toString());
+                mListener.onCrimeUpdated(mCrime);
             }
 
             @Override
@@ -186,6 +187,7 @@ public class CrimeFragment extends Fragment {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 mCrime.setSolved(isChecked);
+                mListener.onCrimeUpdated(mCrime);
             }
         });
 
@@ -369,6 +371,8 @@ public class CrimeFragment extends Fragment {
                 Date date = (Date) data.getSerializableExtra(DatePickerFragment.EXTRA_DATE);
                 mCrime.setDate(date);
                 updateDate();
+                mListener.onCrimeUpdated(mCrime);
+                break;
             case REQUEST_PHOTO:
                 // Create a new Photo object and attach it to the crime
                 String filename = data.getStringExtra(CrimeCameraFragment.EXTRA_PHOTO_FILENAME);
@@ -380,6 +384,7 @@ public class CrimeFragment extends Fragment {
                 deletePhoto();
                 mCrime.setPhoto(new Photo(filename, orientation));
                 showPhoto();
+                mListener.onCrimeUpdated(mCrime);
                 //Log.i(TAG, "Crime: " + mCrime.getTitle() + " has a photo");
                 break;
             case REQUEST_SUSPECT:
@@ -563,6 +568,7 @@ public class CrimeFragment extends Fragment {
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         public void onFragmentInteraction(Uri uri);
+        void onCrimeUpdated(Crime crime);
     }
 
 }

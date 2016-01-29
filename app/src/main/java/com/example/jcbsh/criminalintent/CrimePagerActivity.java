@@ -95,6 +95,11 @@ public class CrimePagerActivity extends ActionBarActivity implements CrimeFragme
 
     }
 
+    @Override
+    public void onCrimeUpdated(Crime crime) {
+
+    }
+
     private class CrimePagerAdapter extends FragmentStatePagerAdapter {
 
 
